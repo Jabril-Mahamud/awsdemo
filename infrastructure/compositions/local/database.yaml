@@ -1,0 +1,124 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: local-database
+  labels:
+    crossplane.io/xrd: xdatabases.kreator.dev
+    provider: local
+spec:
+  compositeTypeRef:
+    apiVersion: kreator.dev/v1alpha1
+    kind: XDatabase
+  resources:
+    - name: postgres-secret
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: awsdemo-db-credentials
+                namespace: awsdemo
+              type: Opaque
+              stringData:
+                POSTGRES_USER: postgres
+                POSTGRES_PASSWORD: postgres
+                POSTGRES_DB: awsdemo
+                DATABASE_URL: "postgresql+asyncpg://postgres:postgres@awsdemo-db:5432/awsdemo"
+          providerConfigRef:
+            name: provider-kubernetes
+      patches:
+        - fromFieldPath: spec.parameters.namespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: postgres-statefulset
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: apps/v1
+              kind: StatefulSet
+              metadata:
+                name: awsdemo-db
+                namespace: awsdemo
+              spec:
+                serviceName: awsdemo-db
+                replicas: 1
+                selector:
+                  matchLabels:
+                    app: awsdemo-db
+                template:
+                  metadata:
+                    labels:
+                      app: awsdemo-db
+                  spec:
+                    containers:
+                      - name: postgres
+                        image: postgres:16-alpine
+                        ports:
+                          - containerPort: 5432
+                        env:
+                          - name: PGDATA
+                            value: /var/lib/postgresql/data/pgdata
+                        envFrom:
+                          - secretRef:
+                              name: awsdemo-db-credentials
+                        volumeMounts:
+                          - name: data
+                            mountPath: /var/lib/postgresql/data
+                        resources:
+                          requests:
+                            cpu: 100m
+                            memory: 256Mi
+                          limits:
+                            cpu: 500m
+                            memory: 512Mi
+                        readinessProbe:
+                          exec:
+                            command: ["pg_isready", "-U", "postgres"]
+                          initialDelaySeconds: 5
+                          periodSeconds: 5
+                volumeClaimTemplates:
+                  - metadata:
+                      name: data
+                    spec:
+                      accessModes: ["ReadWriteOnce"]
+                      storageClassName: standard
+                      resources:
+                        requests:
+                          storage: 1Gi
+          providerConfigRef:
+            name: provider-kubernetes
+      patches:
+        - fromFieldPath: spec.parameters.namespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace
+
+    - name: postgres-service
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha2
+        kind: Object
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: awsdemo-db
+                namespace: awsdemo
+              spec:
+                selector:
+                  app: awsdemo-db
+                ports:
+                  - port: 5432
+                    targetPort: 5432
+                clusterIP: None
+          providerConfigRef:
+            name: provider-kubernetes
+      patches:
+        - fromFieldPath: spec.parameters.namespace
+          toFieldPath: spec.forProvider.manifest.metadata.namespace

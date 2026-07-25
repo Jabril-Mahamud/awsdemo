@@ -1,0 +1,13 @@
+apiVersion: kreator.dev/v1alpha1
+kind: Database
+metadata:
+  name: awsdemo-db
+  namespace: awsdemo
+spec:
+  parameters:
+    name: awsdemo-db
+    namespace: awsdemo
+    size: small
+  compositionSelector:
+    matchLabels:
+      provider: aws

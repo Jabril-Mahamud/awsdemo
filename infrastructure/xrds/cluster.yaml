@@ -1,0 +1,44 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xclusters.kreator.dev
+spec:
+  group: kreator.dev
+  names:
+    kind: XCluster
+    plural: xclusters
+  claimNames:
+    kind: Cluster
+    plural: clusters
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    nodeSize:
+                      type: string
+                      default: t3.large
+                    publicKey:
+                      type: string
+                      description: SSH public key the CLI generates and injects at deploy time
+                    ami:
+                      type: string
+                      description: Override the Ubuntu AMI; defaults to the region map in the composition
+                  required: [name, publicKey]
+              required: [parameters]
+            status:
+              type: object
+              properties:
+                publicIp:
+                  type: string

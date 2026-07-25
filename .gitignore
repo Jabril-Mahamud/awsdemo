@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Secrets (plain text, never commit)
+secrets/raw/
+
+# Fetched k3s kubeconfig (AWS deploy)
+kubeconfig-*
+
+# Environment
+.env
+.env.local
+
+# Go
+/apps/backend/backend

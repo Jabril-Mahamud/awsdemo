@@ -1,0 +1,9 @@
+name: awsdemo
+
+frontend: react
+
+backend: fastapi
+database: postgres
+provider: aws
+region: eu-west-1
+repo_url: https://github.com/OWNER/awsdemo.git

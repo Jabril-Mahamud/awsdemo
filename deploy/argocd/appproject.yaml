@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: awsdemo
+  namespace: argocd
+spec:
+  description: "awsdemo"
+  sourceRepos:
+    - '*'
+  destinations:
+    - namespace: awsdemo
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

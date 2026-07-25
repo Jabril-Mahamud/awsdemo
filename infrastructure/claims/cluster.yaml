@@ -1,0 +1,14 @@
+apiVersion: kreator.dev/v1alpha1
+kind: Cluster
+metadata:
+  name: awsdemo-cluster
+  namespace: awsdemo
+spec:
+  parameters:
+    name: awsdemo-cluster
+    nodeSize: t3.large
+    # publicKey is filled in by `kreator deploy` from a keypair it generates.
+    publicKey: ""
+  compositionSelector:
+    matchLabels:
+      provider: aws

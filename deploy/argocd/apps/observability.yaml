@@ -1,0 +1,186 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: awsdemo-loki
+  namespace: argocd
+spec:
+  destination:
+    namespace: observability
+    server: https://kubernetes.default.svc
+  project: awsdemo
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki
+    targetRevision: "*"
+    helm:
+      releaseName: loki
+      valuesObject:
+        loki:
+          auth_enabled: false
+          commonConfig:
+            replication_factor: 1
+          storage:
+            type: filesystem
+          schemaConfig:
+            configs:
+              - from: "2024-04-01"
+                store: tsdb
+                object_store: filesystem
+                schema: v13
+                index:
+                  prefix: index_
+                  period: 24h
+        deploymentMode: SingleBinary
+        singleBinary:
+          replicas: 1
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
+        chunksCache:
+          enabled: false
+        resultsCache:
+          enabled: false
+        monitoring:
+          selfMonitoring:
+            enabled: false
+            grafanaAgent:
+              installOperator: false
+        test:
+          enabled: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: awsdemo-tempo
+  namespace: argocd
+spec:
+  destination:
+    namespace: observability
+    server: https://kubernetes.default.svc
+  project: awsdemo
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: tempo
+    targetRevision: "*"
+    helm:
+      releaseName: tempo
+      valuesObject:
+        tempo:
+          reportingEnabled: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: awsdemo-prometheus
+  namespace: argocd
+spec:
+  destination:
+    namespace: observability
+    server: https://kubernetes.default.svc
+  project: awsdemo
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus
+    targetRevision: "*"
+    helm:
+      releaseName: prometheus
+      valuesObject:
+        alertmanager:
+          enabled: false
+        prometheus-pushgateway:
+          enabled: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: awsdemo-promtail
+  namespace: argocd
+spec:
+  destination:
+    namespace: observability
+    server: https://kubernetes.default.svc
+  project: awsdemo
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: promtail
+    targetRevision: "*"
+    helm:
+      releaseName: promtail
+      valuesObject:
+        config:
+          clients:
+            - url: http://loki:3100/loki/api/v1/push
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: awsdemo-grafana
+  namespace: argocd
+spec:
+  info:
+    - name: Open
+      value: http://grafana.localhost
+  destination:
+    namespace: observability
+    server: https://kubernetes.default.svc
+  project: awsdemo
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: grafana
+    targetRevision: "*"
+    helm:
+      releaseName: grafana
+      valuesObject:
+        adminPassword: admin
+        ingress:
+          enabled: true
+          ingressClassName: nginx
+          hosts:
+            - grafana.localhost
+        datasources:
+          datasources.yaml:
+            apiVersion: 1
+            datasources:
+              - name: Prometheus
+                type: prometheus
+                url: http://prometheus-server:80
+                isDefault: true
+              - name: Loki
+                type: loki
+                url: http://loki:3100
+              - name: Tempo
+                type: tempo
+                url: http://tempo:3100
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

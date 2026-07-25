@@ -1,0 +1,167 @@
+
+
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: aws-cluster
+  labels:
+    crossplane.io/xrd: xclusters.kreator.dev
+    provider: aws
+spec:
+  compositeTypeRef:
+    apiVersion: kreator.dev/v1alpha1
+    kind: XCluster
+  resources:
+    - name: node-key
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: KeyPair
+        spec:
+          forProvider:
+            region: eu-west-1
+            tags:
+              kreator.dev/project: awsdemo
+          providerConfigRef:
+            name: provider-aws
+      patches:
+        - fromFieldPath: spec.parameters.publicKey
+          toFieldPath: spec.forProvider.publicKey
+    - name: node-security-group
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroup
+        spec:
+          forProvider:
+            region: eu-west-1
+            description: k3s node access (ssh, api, ingress) for awsdemo
+            tags:
+              kreator.dev/project: awsdemo
+          providerConfigRef:
+            name: provider-aws
+
+    - name: node-ingress-22
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            region: eu-west-1
+            type: ingress
+            fromPort: 22
+            toPort: 22
+            protocol: tcp
+            cidrBlocks:
+              - 0.0.0.0/0
+            securityGroupIdSelector:
+              matchControllerRef: true
+          providerConfigRef:
+            name: provider-aws
+
+    - name: node-ingress-6443
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            region: eu-west-1
+            type: ingress
+            fromPort: 6443
+            toPort: 6443
+            protocol: tcp
+            cidrBlocks:
+              - 0.0.0.0/0
+            securityGroupIdSelector:
+              matchControllerRef: true
+          providerConfigRef:
+            name: provider-aws
+
+    - name: node-ingress-80
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            region: eu-west-1
+            type: ingress
+            fromPort: 80
+            toPort: 80
+            protocol: tcp
+            cidrBlocks:
+              - 0.0.0.0/0
+            securityGroupIdSelector:
+              matchControllerRef: true
+          providerConfigRef:
+            name: provider-aws
+
+    - name: node-ingress-443
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            region: eu-west-1
+            type: ingress
+            fromPort: 443
+            toPort: 443
+            protocol: tcp
+            cidrBlocks:
+              - 0.0.0.0/0
+            securityGroupIdSelector:
+              matchControllerRef: true
+          providerConfigRef:
+            name: provider-aws
+
+    - name: node-egress
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: SecurityGroupRule
+        spec:
+          forProvider:
+            region: eu-west-1
+            type: egress
+            fromPort: 0
+            toPort: 0
+            protocol: "-1"
+            cidrBlocks:
+              - 0.0.0.0/0
+            securityGroupIdSelector:
+              matchControllerRef: true
+          providerConfigRef:
+            name: provider-aws
+    - name: node-instance
+      base:
+        apiVersion: ec2.aws.upbound.io/v1beta1
+        kind: Instance
+        spec:
+          forProvider:
+            region: eu-west-1
+            ami: ami-0d64bb532e0502c46
+            instanceType: t3.large
+            associatePublicIpAddress: true
+            keyNameSelector:
+              matchControllerRef: true
+            vpcSecurityGroupIdSelector:
+              matchControllerRef: true
+            rootBlockDevice:
+              - volumeSize: 30
+                volumeType: gp3
+            userData: |
+              #!/bin/bash
+              set -e
+              PUBIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+              curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --tls-san ${PUBIP}" sh -
+            tags:
+              Name: awsdemo-node
+              kreator.dev/project: awsdemo
+          providerConfigRef:
+            name: provider-aws
+      patches:
+        - fromFieldPath: spec.parameters.nodeSize
+          toFieldPath: spec.forProvider.instanceType
+        # Optional AMI override from the claim; skipped when unset.
+        - fromFieldPath: spec.parameters.ami
+          toFieldPath: spec.forProvider.ami
+        # Surface the public IP so the CLI can read it from the claim status.
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.publicIp
+          toFieldPath: status.publicIp

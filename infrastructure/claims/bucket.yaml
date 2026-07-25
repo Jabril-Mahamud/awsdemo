@@ -1,0 +1,12 @@
+apiVersion: kreator.dev/v1alpha1
+kind: Bucket
+metadata:
+  name: awsdemo-bucket
+  namespace: awsdemo
+spec:
+  parameters:
+    name: awsdemo-bucket-2c1bbdb1
+    namespace: awsdemo
+  compositionSelector:
+    matchLabels:
+      provider: aws

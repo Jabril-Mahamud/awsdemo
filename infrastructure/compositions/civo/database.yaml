@@ -1,0 +1,50 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: civo-database
+  labels:
+    crossplane.io/xrd: xdatabases.kreator.dev
+    provider: civo
+spec:
+  compositeTypeRef:
+    apiVersion: kreator.dev/v1alpha1
+    kind: XDatabase
+  resources:
+    - name: civo-database
+      base:
+        apiVersion: database.civo.crossplane.io/v1alpha1
+        kind: CivoDatabaseCluster
+        spec:
+          forProvider:
+            name: awsdemo-db
+            region: eu-west-1
+            nodes: 1
+            size: g3.db.xsmall
+            engine: PostgreSQL
+          providerConfigRef:
+            name: provider-civo
+          writeConnectionSecretToRef:
+            name: awsdemo-db-conn
+            namespace: crossplane-system
+      patches:
+        - fromFieldPath: spec.parameters.name
+          toFieldPath: spec.forProvider.name
+        - fromFieldPath: spec.parameters.name
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.name
+            strategy: string
+            string:
+              fmt: "%s-conn"
+          toFieldPath: spec.writeConnectionSecretToRef.name
+      connectionDetails:
+        - name: host
+          fromConnectionSecretKey: host
+        - name: port
+          fromConnectionSecretKey: port
+        - name: username
+          fromConnectionSecretKey: username
+        - name: password
+          fromConnectionSecretKey: password
