@@ -19,7 +19,7 @@ export function App() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
+    <main className="mx-auto min-h-screen max-w-2xl px-6 py-10">
       <header className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Kreator feature board</h1>
