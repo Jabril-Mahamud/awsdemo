@@ -19,7 +19,7 @@ const features = [
 
 export function Landing({ onLaunch }: { onLaunch: () => void }) {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-20">
+    <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-20">
       <div className="mb-6 flex items-center gap-2">
         <HealthDot />
         <span className="text-xs tracking-wide text-muted-foreground">
