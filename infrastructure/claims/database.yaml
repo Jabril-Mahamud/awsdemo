@@ -4,10 +4,10 @@ metadata:
   name: awsdemo-db
   namespace: awsdemo
 spec:
+  compositionSelector:
+    matchLabels:
+      provider: local
   parameters:
     name: awsdemo-db
     namespace: awsdemo
     size: small
-  compositionSelector:
-    matchLabels:
-      provider: aws
