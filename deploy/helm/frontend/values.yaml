@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: localhost:5001/awsdemo-frontend
-  tag: "b7352a9"
+  tag: "c2df23e"
   pullPolicy: Always
 
 service:
