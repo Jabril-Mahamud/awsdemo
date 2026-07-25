@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+import { cn } from "@/lib/utils";
+
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 export function HealthDot() {
@@ -28,13 +30,10 @@ export function HealthDot() {
   return (
     <span
       title={healthy ? "Backend connected" : "Backend unreachable"}
-      style={{
-        display: "inline-block",
-        width: 10,
-        height: 10,
-        borderRadius: "50%",
-        backgroundColor: healthy ? "#22c55e" : "#ef4444",
-      }}
+      className={cn(
+        "inline-block size-2.5 rounded-full",
+        healthy ? "bg-green-500" : "bg-red-500",
+      )}
     />
   );
 }

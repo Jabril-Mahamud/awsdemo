@@ -1,5 +1,10 @@
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 export function LoginForm({ onLogin }: { onLogin: (token: string) => void }) {
@@ -40,39 +45,45 @@ export function LoginForm({ onLogin }: { onLogin: (token: string) => void }) {
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: "100px auto", padding: 20 }}>
-      <h1>{isRegister ? "Register" : "Login"}</h1>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 12 }}>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
-          />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", padding: 8, boxSizing: "border-box" }}
-          />
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit" style={{ width: "100%", padding: 10, marginBottom: 8 }}>
-          {isRegister ? "Register" : "Login"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsRegister(!isRegister)}
-          style={{ width: "100%", padding: 10, background: "none", border: "1px solid #ccc" }}
-        >
-          {isRegister ? "Already have an account? Login" : "Need an account? Register"}
-        </button>
-      </form>
-    </div>
+    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">{isRegister ? "Create account" : "Sign in"}</CardTitle>
+          <CardDescription>
+            {isRegister
+              ? "Register to post a request and cast your votes."
+              : "Sign in to the Kreator feature board."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={isRegister ? "new-password" : "current-password"}
+              />
+            </div>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button type="submit">{isRegister ? "Register" : "Sign in"}</Button>
+            <Button type="button" variant="ghost" onClick={() => setIsRegister(!isRegister)}>
+              {isRegister ? "Already have an account? Sign in" : "Need an account? Register"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </main>
   );
 }
