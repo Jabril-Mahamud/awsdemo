@@ -10,7 +10,7 @@ spec:
   project: awsdemo
   source:
     path: deploy/helm/frontend
-    repoURL: git://git-server.default.svc/repo.git
+    repoURL: https://github.com/Jabril-Mahamud/awsdemo.git
     targetRevision: HEAD
   syncPolicy:
     automated:

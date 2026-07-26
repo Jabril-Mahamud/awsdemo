@@ -6,7 +6,7 @@ metadata:
 spec:
   compositionSelector:
     matchLabels:
-      provider: local
+      provider: aws
   parameters:
     name: awsdemo-db
     namespace: awsdemo
