@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: awsdemo-frontend
-  tag: "12a290b"
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/jabril-mahamud/awsdemo-frontend
+  tag: "52c4567"
+  pullPolicy: Always
 
 service:
   type: ClusterIP
