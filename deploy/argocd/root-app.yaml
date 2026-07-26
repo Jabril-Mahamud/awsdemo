@@ -4,14 +4,14 @@ metadata:
   name: awsdemo-root
   namespace: argocd
 spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
   project: awsdemo
   source:
-    repoURL: https://github.com/OWNER/awsdemo.git
-    targetRevision: HEAD
     path: deploy/argocd/apps
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: argocd
+    repoURL: https://github.com/Jabril-Mahamud/awsdemo.git
+    targetRevision: HEAD
   syncPolicy:
     automated:
       prune: true

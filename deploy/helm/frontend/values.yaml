@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: localhost:5001/awsdemo-frontend
-  tag: latest
-  pullPolicy: Always
+  repository: awsdemo-frontend
+  tag: "12a290b"
+  pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
@@ -11,7 +11,7 @@ service:
 
 ingress:
   enabled: true
-  host: frontend.localhost
+  host: frontend.52.30.45.243.nip.io
 
 resources:
   requests:
@@ -27,4 +27,4 @@ autoscaling:
   maxReplicas: 5
   targetCPUUtilization: 70
 
-apiUrl: http://api.localhost
+apiUrl: http://api.52.30.45.243.nip.io
