@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: awsdemo-backend
-  tag: "12a290b"
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/jabril-mahamud/awsdemo-backend
+  tag: "8cee6ed"
+  pullPolicy: Always
 
 service:
   type: ClusterIP
@@ -11,7 +11,7 @@ service:
 
 ingress:
   enabled: true
-  host: api.52.30.45.243.nip.io
+  host: api.3.252.78.1.nip.io
 
 resources:
   requests:
