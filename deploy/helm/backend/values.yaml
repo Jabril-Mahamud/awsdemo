@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/jabril-mahamud/awsdemo-backend
-  tag: "52c4567"
+  tag: "8cee6ed"
   pullPolicy: Always
 
 service:
@@ -11,7 +11,7 @@ service:
 
 ingress:
   enabled: true
-  host: api.52.30.45.243.nip.io
+  host: api.3.252.78.1.nip.io
 
 resources:
   requests:
