@@ -1,15 +1,14 @@
 import logging
 import sys
-
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
 from app.models import Base
-from app.routes import auth, todos, health
+from app.routes import auth, features, health
 
 logger = logging.getLogger(__name__)
 
@@ -44,5 +43,5 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
-app.include_router(todos.router)
+app.include_router(features.router)
 app.include_router(health.router)
