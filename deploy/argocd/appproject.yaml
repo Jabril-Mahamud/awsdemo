@@ -12,6 +12,10 @@ spec:
       server: https://kubernetes.default.svc
     - namespace: argocd
       server: https://kubernetes.default.svc
+    # The LGTM apps deploy here. Without this destination every observability
+    # app sits in InvalidSpecError and the stack never installs.
+    - namespace: observability
+      server: https://kubernetes.default.svc
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

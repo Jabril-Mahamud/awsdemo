@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/jabril-mahamud/awsdemo-frontend
-  tag: "7e4b04a"
+  tag: "ea98716"
   pullPolicy: Always
 
 service:
