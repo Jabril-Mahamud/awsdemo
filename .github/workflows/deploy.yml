@@ -1,0 +1,77 @@
+name: deploy
+
+# Continuous deployment. On every push to master (awsdemo's deployed branch, the
+# one ArgoCD tracks via HEAD): build each app image, push it to ghcr, pin the
+# chart values to the new tag, and commit the pinned values back. ArgoCD on the
+# node syncs from this repo and pulls the images from ghcr, so this replaces the
+# laptop-bound "docker save | ssh ctr import" step from kreator deploy.
+#
+# One-time setup: the ghcr packages are created private on first push. The node
+# pulls anonymously (same as it clones this repo anonymously), so make each
+# package public once under github.com/OWNER?tab=packages, or the node's image
+# pulls fail with "unauthorized".
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute vars
+        id: v
+        run: |
+          echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Build, push, and pin each service
+        env:
+          OWNER: ${{ steps.v.outputs.owner }}
+          SHA: ${{ steps.v.outputs.sha }}
+        run: |
+          pin() {
+            svc="$1"; ctx="$2"
+            # ghcr refs must be lowercase; the chart dir keeps the service's exact name.
+            img="ghcr.io/${OWNER}/$(echo 'awsdemo-'"${svc}" | tr '[:upper:]' '[:lower:]')"
+            docker build -t "${img}:${SHA}" -t "${img}:latest" "${ctx}"
+            docker push "${img}:${SHA}"
+            docker push "${img}:latest"
+            # Rewrite only the first repository/tag/pullPolicy (the image block);
+            # ingress host and apiUrl set by kreator deploy are left untouched.
+            values="deploy/helm/${svc}/values.yaml"
+            sed -i "0,/repository:/s|repository:.*|repository: ${img}|" "${values}"
+            sed -i "0,/tag:/s|tag:.*|tag: \"${SHA}\"|" "${values}"
+            sed -i "0,/pullPolicy:/s|pullPolicy:.*|pullPolicy: Always|" "${values}"
+          }
+          pin backend apps/backend
+          pin frontend apps/frontend
+
+      - name: Commit pinned tags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/helm
+          if git diff --cached --quiet; then
+            echo "no image changes to commit"
+            exit 0
+          fi
+          # [skip ci] so this bot commit does not re-trigger this workflow.
+          git commit -m "deploy: pin images to ${{ steps.v.outputs.sha }} [skip ci]"
+          git push

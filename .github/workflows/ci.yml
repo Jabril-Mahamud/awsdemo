@@ -1,0 +1,18 @@
+name: ci
+
+# Pre-merge gate. Builds every app image so a broken Dockerfile is caught before
+# it can reach the deployed branch. No push, no deploy.
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build images
+        run: |
+          docker build -t awsdemo-backend:ci apps/backend
+          docker build -t awsdemo-frontend:ci apps/frontend
