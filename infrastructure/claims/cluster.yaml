@@ -4,11 +4,10 @@ metadata:
   name: awsdemo-cluster
   namespace: awsdemo
 spec:
-  parameters:
-    name: awsdemo-cluster
-    nodeSize: t3.large
-    # publicKey is filled in by `kreator deploy` from a keypair it generates.
-    publicKey: ""
   compositionSelector:
     matchLabels:
       provider: aws
+  parameters:
+    name: awsdemo-cluster
+    nodeSize: t3.xlarge
+    publicKey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP+hL5iHucMkEMmqTmg2eSN5EDVIWuXN4hsX2QkU9waV kreator-k3s"

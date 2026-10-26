@@ -26,6 +26,10 @@ spec:
       patches:
         - fromFieldPath: spec.parameters.publicKey
           toFieldPath: spec.forProvider.publicKey
+        # Pin the AWS key name to the composite name so the instance can reference it
+        # by a fixed name instead of a selector that races the keypair's creation.
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
     - name: node-security-group
       base:
         apiVersion: ec2.aws.upbound.io/v1beta1
@@ -138,8 +142,6 @@ spec:
             ami: ami-0d64bb532e0502c46
             instanceType: t3.large
             associatePublicIpAddress: true
-            keyNameSelector:
-              matchControllerRef: true
             vpcSecurityGroupIdSelector:
               matchControllerRef: true
             rootBlockDevice:
@@ -148,7 +150,10 @@ spec:
             userData: |
               #!/bin/bash
               set -e
-              PUBIP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+              # Ubuntu 24.04 EC2 defaults to IMDSv2, so the metadata GET needs a token
+              # first; without it PUBIP is empty and k3s dies on `--tls-san` with no arg.
+              TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 300")
+              PUBIP=$(curl -s -H "X-aws-ec2-metadata-token: ${TOKEN}" http://169.254.169.254/latest/meta-data/public-ipv4)
               curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --tls-san ${PUBIP}" sh -
             tags:
               Name: awsdemo-node
@@ -158,6 +163,11 @@ spec:
       patches:
         - fromFieldPath: spec.parameters.nodeSize
           toFieldPath: spec.forProvider.instanceType
+        # Reference the keypair by its deterministic name. A controller-ref selector can
+        # resolve too late, launching the instance with no SSH key; EC2 keyName is
+        # immutable after launch, so the node would then be unreachable forever.
+        - fromFieldPath: metadata.name
+          toFieldPath: spec.forProvider.keyName
         # Optional AMI override from the claim; skipped when unset.
         - fromFieldPath: spec.parameters.ami
           toFieldPath: spec.forProvider.ami
