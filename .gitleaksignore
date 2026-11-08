@@ -1,0 +1,11 @@
+# SealedSecret ciphertext in secrets/sealed/: only the cluster controller can decrypt it
+22475fe0cd23e35c56a50fa1052edba3c15ea55a:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+28aefbb63d4a0f04af32fbf97c1122e0f3b8c31b:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+43c7f50623c98cdf45c728513ea34d1cbef6a451:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+8ccb80a3b9b1fd7e96d592d1782966e22c56a011:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+8cee6ed88c2607aaf6756df6735df2507be533dd:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+a852bf95ee93329abb8adf0b923c2c90abfe7b3b:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+b7352a9b34724f3e3bfa9330f16295aea8cbbebd:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+bd47801764b805f9afdde3873f03afbf440d1656:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+c2df23e138eeca14918629282166af9e4b6ba909:secrets/sealed/jwt-secret.yaml:generic-api-key:9
+ea98716e8ef3b92763650e4083c1408f8a92dba8:secrets/sealed/jwt-secret.yaml:generic-api-key:9
